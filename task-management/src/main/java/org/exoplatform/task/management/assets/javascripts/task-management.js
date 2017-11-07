@@ -276,6 +276,7 @@ $(document).ready(function() {
     
     $rightPanel.on('submit', '.taskFileFormBox form', function(e) {
         e.preventDefault();
+        alert(1);
         var $form = $(e.target).closest('form');
         var $taskDetail = $form.closest('[data-taskid]');
         var $allTaskFiles = $form.closest('[data-alltaskFile]');
@@ -283,7 +284,13 @@ $(document).ready(function() {
 
         var loadAllTaskFile = $allTaskFiles.data('alltaskFile');
         var taskId = $taskDetail.data('taskid');
-        var files = $form.find('$taskFile').files;
+        var taskFileInput = $form.find('#taskFile')[0];
+        alert(taskFileInput);
+        console.log('task file input:');
+        console.log(taskFileInput[0]);
+        var files = taskFileInput[0].files;
+        console.log(files);
+        console.log(files.length);
         if(files == undefined || files.length == 0){
         	alert('Please select your file!');
             return false;	

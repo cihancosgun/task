@@ -67,7 +67,7 @@
                     <div class="fileRight">
                         <div class="fileInputBox ">
                             <div class="fileInput">
-                            <input title="&{files.message.addYourFile}" name="file" type="file" id="taskFile">                           
+                            <input title="&{files.message.addYourFile}" name="file" type="file" id="taskFile" >                           
                             </div>
                             <button id="taskFileButton" type="submit" class="btn btn-primary">&{files.message.addYourFile}</button>
                         </div>
