@@ -404,7 +404,8 @@
             tableName="TASK_LABEL_TASK"/>
   </changeSet>
 
-  <!-- Definition of sequence for TASK_LABEL -->
+  <!-- Definition of sequen
+  ce for TASK_LABEL -->
   <changeSet author="task" id="1.0.0-26" dbms="oracle,postgresql">
     <validCheckSum>7:51f423674365954ba3407c9aeeefe68a</validCheckSum>
     <validCheckSum>7:a8c836136681a4810483a120395d458d</validCheckSum>
@@ -420,6 +421,39 @@
     <sql dbms="postgresql">select setval('SEQ_TASK_LABELS_LABEL_ID', max(LABEL_ID)+1) from TASK_LABELS</sql>
     <sqlFile dbms="oracle" encoding="utf8" endDelimiter="/" relativeToChangelogFile="true" path="ORACLE_SEQ_TASK_LABELS_LABEL_ID.sql" />
   </changeSet>
-
-
+  
+  
+  
+   <!-- Definition of TASK_FILES table -->
+  <changeSet author="task" id="1.0.0-99">
+    <createTable tableName="TASK_FILES">
+      <column name="FILE_ID" type="BIGINT" autoIncrement="${autoIncrement}" startWith="1">
+        <constraints primaryKey="true" primaryKeyName="PK_TASK_FILES" nullable="false"/>
+      </column>
+      <column name="AUTHOR" type="NVARCHAR(100)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="FILE_NAME" type="NVARCHAR(2000)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="FILE_TYPE" type="NVARCHAR(2000)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="FILE_SIZE" type="BIGINT">
+        <constraints nullable="false"/>
+      </column>
+      <column name="CREATED_TIME" type="TIMESTAMP">
+        <constraints nullable="true"/>
+      </column>
+      <column name="TASK_ID" type="BIGINT">
+        <constraints nullable="false" foreignKeyName="FK_FILE_TASK_01" references="TASK_TASKS(TASK_ID)"/>
+      </column>
+    </createTable>
+    <modifySql dbms="mysql">
+      <append value=" ENGINE=INNODB CHARSET=UTF8 COLLATE utf8_general_ci"/>
+    </modifySql>
+  </changeSet>
+  
+  
+  
 </databaseChangeLog>

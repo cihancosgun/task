@@ -31,9 +31,9 @@ import java.util.Date;
 @ExoEntity
 @Table(name = "TASK_FILES")
 @NamedQueries({
-    @NamedQuery(name = "TaskFile.countFileOfTask",
+    @NamedQuery(name = "File.countFileOfTask",
         query = "SELECT count(c) FROM TaskFile c WHERE c.task.id = :taskId"),
-    @NamedQuery(name = "TaskFile.findFilesOfTask",
+    @NamedQuery(name = "File.findFilesOfTask",
         query = "SELECT c FROM TaskFile c WHERE c.task.id = :taskId ORDER BY c.createdTime DESC"),
     @NamedQuery(name = "TaskFile.deleteFileOfTask",
         query = "DELETE FROM TaskFile c WHERE c.task.id = :taskId")

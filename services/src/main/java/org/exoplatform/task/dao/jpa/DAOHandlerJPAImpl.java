@@ -25,6 +25,7 @@ import org.exoplatform.task.domain.Comment;
 import org.exoplatform.task.domain.Project;
 import org.exoplatform.task.domain.Status;
 import org.exoplatform.task.domain.Task;
+import org.exoplatform.task.domain.TaskFile;
 import org.exoplatform.task.domain.ChangeLog;
 import org.exoplatform.task.domain.UserSetting;
 import org.exoplatform.task.service.impl.AbstractDAOHandler;
@@ -45,6 +46,7 @@ public class DAOHandlerJPAImpl extends AbstractDAOHandler implements DAOHandler 
     pHandler = new ProjectDAOImpl();
     tHandler = new TaskDAOImpl();
     cHandler = new CommentDAOImpl();
+    tfHandler = new TaskFileDAOImpl();
     taskLogHandler = new TaskLogDAOImpl();
     sHandler = new StatusDAOImpl();
     uHandler = new UserSettingDAO();
@@ -62,6 +64,8 @@ public class DAOHandlerJPAImpl extends AbstractDAOHandler implements DAOHandler 
       return (E)((Project)e).clone(false);
     } else if (e instanceof Comment) {
       return (E)((Comment)e).clone();
+    } else if (e instanceof TaskFile) {
+      return (E)((TaskFile)e).clone();
     } else if (e instanceof ChangeLog) {
       return (E)((ChangeLog)e).clone();
     } else if (e instanceof UserSetting) {
