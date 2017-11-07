@@ -32,6 +32,8 @@ public class TaskModel {
   private List<CommentModel> comments;
   private User currentUser;
   private List<Label> labels = new ArrayList<Label>();
+  private long taskFileCount;
+  private List<TaskFileModel> taskFiles;
   
   public Task getTask() {
     return task;
@@ -84,5 +86,18 @@ public class TaskModel {
 
   public void setLabels(List<Label> labels) {
     this.labels = labels;
+  }
+  
+  public long getTaskFileCount() {
+    return taskFileCount;
+  }
+  public void setTaskFileCount(long taskFileCount) {
+    this.taskFileCount = taskFileCount;
+  }
+  public List<TaskFileModel> getTaskFiles() {
+    return taskFiles;
+  }
+  public void setTaskFiles(List<TaskFileModel> taskFiles) {
+    this.taskFiles = taskFiles;
   }
 }

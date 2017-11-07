@@ -272,6 +272,39 @@ $(document).ready(function() {
 
         return false;
     });
+    
+    
+    $rightPanel.on('submit', '.taskFileFormBox form', function(e) {
+        e.preventDefault();
+        var $form = $(e.target).closest('form');
+        var $taskDetail = $form.closest('[data-taskid]');
+        var $allTaskFiles = $form.closest('[data-alltaskFile]');
+        var $taskFileContainer = $taskDetail.find('#tab-taskFiles');
+
+        var loadAllTaskFile = $allTaskFiles.data('alltaskFile');
+        var taskId = $taskDetail.data('taskid');
+        var files = $form.find('$taskFile').files;
+        if(files == undefined || files.length == 0){
+        	alert('Please select your file!');
+            return false;	
+        }
+        var fileName = files[0].name;
+        var fileSize = files[0].size;
+        var fileType = files[0].type;
+        
+        var postTaskFileURL = $form.jzURL('TaskController.taskFile');
+        var xhr = $.post(postTaskFileURL, { taskId: taskId, fileName: fileName, fileType:fileType, fileSize:fileSize}, function(data) {
+            $taskFileContainer.jzLoad('TaskController.renderTaskTaskFiles()', {id: taskId, loadAllTaskFile: loadAllTaskFile}, function() {
+                enhanceTaskFilesLinks();
+                initTaskFileEditor();
+            });
+        },'json');
+        xhr.fail(function() {
+          taApp.showWarningDialog(xhr.responseText);
+        });
+
+        return false;
+    });
 
     $rightPanel.on('click', '[data-commentid] a.controllDelete', function(e) {
         var $a = $(e.target).closest('a');
@@ -299,6 +332,34 @@ $(document).ready(function() {
             }
         });
     });
+    
+    
+    $rightPanel.on('click', '[data-taskFileid] a.controllDelete', function(e) {
+        var $a = $(e.target).closest('a');
+        var $allTaskFiles = $a.closest('[data-alltaskFile]');
+        var $taskFile = $a.closest('[data-taskFileid]');
+        var $taskFileContainer = $a.closest('#tab-taskFiles');
+        var $task = $a.closest('[data-taskid]');
+
+        var taskId = $task.data('taskid');
+        var taskFileId = $taskFile.data('taskFileid');
+        var loadAllTaskFile = $allTaskFiles.data('alltaskFile');
+        var deleteURL = $a.jzURL('TaskController.deleteTaskFile');
+        $.ajax({
+            url: deleteURL,
+            data: {fileId: taskFileId},
+            type: 'POST',
+            success: function(data) {
+                $taskFileContainer.jzLoad('TaskController.renderTaskTaskFiles()', {id: taskId, loadAllTaskFile: loadAllTaskFile}, function() {
+                  enhanceTaskFilesLinks();
+                  initTaskFileEditor();
+                });
+            },
+            error: function(xhr, textStatus, errorThrown) {
+                alert(xhr.responseText);
+            }
+        });
+    });
 
     $rightPanel.on('click', 'a.load-all-comments', function(e) {
         e.preventDefault();
@@ -312,6 +373,22 @@ $(document).ready(function() {
           } else {
             enhanceCommentsLinks();
             initCommentEditor();            
+          }
+        });
+    });
+    
+    $rightPanel.on('click', 'a.load-all-taskFiles', function(e) {
+        e.preventDefault();
+        var $a = $(e.target).closest('a');
+        var loadAll = $a.data('loadall');
+        var $taskFile = $a.closest('#tab-taskFiles');
+        var taskId = $taskFile.closest('[data-taskid]').data('taskid');
+        $taskFile.jzLoad('TaskController.renderTaskTaskFiles()', {id: taskId, loadAllTaskFile: loadAll}, function(html, status, xhr) {
+          if (xhr.status >= 400) {
+            taApp.showWarningDialog(xhr.responseText);
+          } else {
+            enhanceTaskFilesLinks();
+            initTaskFileEditor();            
           }
         });
     });

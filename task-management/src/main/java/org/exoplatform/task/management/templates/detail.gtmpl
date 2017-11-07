@@ -331,14 +331,20 @@ data-startdate="<%=df.format(startDate)%>" data-duration="${duration}">
         <li class="taskTabs">
             <a href="#tab-changes" data-toggle="tab">&{label.changes}</a>
 </li>
+  <li class="taskTabs">
+            <a href="#tab-files" data-toggle="tab">&{label.files}</a>
+</li>
     </ul>
 <div id="myTabContent" class="tab-content">
-<div id="tab-comments" class="tab-pane fade in active ">
-#{include path=taskComments.gtmpl /}
-</div>
+	<div id="tab-comments" class="tab-pane fade in active ">
+	#{include path=taskComments.gtmpl /}
+	</div>
         <div id="tab-changes" class="tab-pane fade taskLogs">
 
         </div>
+	<div id="tab-files" class="tab-pane">
+	    #{include path=taskFiles.gtmpl /}
+    </div>         
 </div>
 </div>
 </div>

@@ -34,6 +34,7 @@ import org.exoplatform.task.dao.DAOHandler;
 import org.exoplatform.task.dao.OrderBy;
 import org.exoplatform.task.dao.TaskQuery;
 import org.exoplatform.task.domain.Comment;
+import org.exoplatform.task.domain.TaskFile;
 import org.exoplatform.task.domain.Label;
 import org.exoplatform.task.domain.LabelTaskMapping;
 import org.exoplatform.task.domain.Status;
@@ -299,4 +300,56 @@ public class TaskServiceImpl implements TaskService {
   public Set<String> getCoworker(long taskId) { 
     return daoHandler.getTaskHandler().getCoworker(taskId);
   }
+  
+  
+  
+  @Override
+  public TaskFile getTaskFile(long fileId) {
+    return daoHandler.getTaskFileHandler().find(fileId);
+  }
+
+  @Override
+  public ListAccess<TaskFile> getTaskFiles(long taskId) {
+    return daoHandler.getTaskFileHandler().findTaskFiles(taskId);
+  }
+
+  @Override
+  @ExoTransactional
+  public TaskFile addTaskFile(long id, String username, String fileName, String fileType, Long fileSize) throws EntityNotFoundException {
+
+    Task task = getTask(id); //Can throws TaskNotFoundException
+
+    TaskFile newTaskFile = new TaskFile();
+    newTaskFile.setTask(task);
+    newTaskFile.setAuthor(username);
+    newTaskFile.setFileName(fileName);
+    newTaskFile.setFileType(fileType);
+    newTaskFile.setFileSize(fileSize);
+    newTaskFile.setCreatedTime(new Date());
+    TaskFile obj = daoHandler.getTaskFileHandler().create(newTaskFile);
+
+    try {
+      listenerService.broadcast(TASK_TASKFILE_CREATION, this, obj);
+    } catch (Exception e) {
+      LOG.error("Error while broadcasting task creation event", e);
+    }
+
+    return obj;
+  }
+  
+  @Override
+  @ExoTransactional
+  public void removeTaskFile(long fileId) throws EntityNotFoundException {
+
+    TaskFile taskFile = daoHandler.getTaskFileHandler().find(fileId);
+
+    if(taskFile == null) {
+      LOG.info("Can not find file with ID: " + fileId);
+      throw new EntityNotFoundException(fileId, Comment.class);
+    }
+
+    daoHandler.getTaskFileHandler().delete(taskFile);
+  }
+  
+  
 }

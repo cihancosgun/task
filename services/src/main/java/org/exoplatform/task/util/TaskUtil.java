@@ -37,6 +37,7 @@ import org.exoplatform.task.exception.EntityNotFoundException;
 import org.exoplatform.task.exception.ParameterEntityException;
 import org.exoplatform.task.model.CommentModel;
 import org.exoplatform.task.model.GroupKey;
+import org.exoplatform.task.model.TaskFileModel;
 import org.exoplatform.task.model.TaskModel;
 import org.exoplatform.task.model.User;
 import org.exoplatform.task.service.ProjectService;
@@ -195,7 +196,7 @@ public final class TaskUtil {
   }
 
   public static TaskModel getTaskModel(Long id, boolean loadAllComment, ResourceBundle bundle, String username,
-                                       TaskService taskService, OrganizationService orgService, UserService userService, ProjectService projectService) throws EntityNotFoundException {
+                                       TaskService taskService, OrganizationService orgService, UserService userService, ProjectService projectService, boolean loadAllFile) throws EntityNotFoundException {
     TaskModel taskModel = new TaskModel();
     
     Task task = taskService.getTask(id); //Can throw TaskNotFoundException    
@@ -214,6 +215,10 @@ public final class TaskUtil {
     ListAccess<Comment> listComments = taskService.getComments(task.getId());
     long commentCount = ListUtil.getSize(listComments);
     taskModel.setCommentCount(commentCount);
+    
+    ListAccess<TaskFile> listTaskFiles = taskService.getTaskFiles(task.getId());
+    long taskFileCount = ListUtil.getSize(listTaskFiles);
+    taskModel.setTaskFileCount(taskFileCount);
 
     int limitComment = loadAllComment ? -1 : 2;
     List<Comment> cmts = Arrays.asList(ListUtil.load(listComments, 0, limitComment));
@@ -224,6 +229,18 @@ public final class TaskUtil {
       comments.add(new CommentModel(c, u, CommentUtil.formatMention(c.getComment(), userService)));
     }
     taskModel.setComments(comments);
+    
+    
+    int limitTaskFile = loadAllFile ? -1 : 2;
+    List<TaskFile> tfls = Arrays.asList(ListUtil.load(listTaskFiles, 0, limitTaskFile));
+    Collections.reverse(tfls);
+    List<TaskFileModel> taskFiles = new ArrayList<TaskFileModel>(tfls.size());
+    for(TaskFile c : tfls) {
+      org.exoplatform.task.model.User u = userService.loadUser(c.getAuthor());
+      taskFiles.add(new TaskFileModel(c, u));
+    }
+    taskModel.setTaskFiles(taskFiles);
+    
 
     org.exoplatform.task.model.User currentUser = userService.loadUser(username);
     taskModel.setCurrentUser(currentUser);
@@ -852,6 +869,26 @@ public final class TaskUtil {
 
     return false;
   }
+  
+  public static boolean canDeleteTaskFile(Identity identity, TaskFile taskFile) {
+	    if (taskFile == null || identity == null) {
+	      return false;
+	    }
+
+	    // Owner can delete his comment
+	    if (identity.getUserId().equals(taskFile.getAuthor())) {
+	      return true;
+	    }
+
+	    // Project manager can delete comment
+	    Task task = taskFile.getTask();
+	    if (task.getStatus() != null) {
+	      Project pj = task.getStatus().getProject();
+	      return pj.canEdit(identity);
+	    }
+
+	    return false;
+	  }
   
   private static boolean isLabelIn(Label child, Label parent) {
     Label pr = child;

@@ -183,7 +183,7 @@ public class TaskManagement {
     if (taskId != -1) {
       try {
         taskModel = TaskUtil.getTaskModel(taskId, false, bundle, username, taskService,
-                                                    orgService, userService, projectService);
+                                                    orgService, userService, projectService,false);
         if (taskModel.getTask().getStatus() != null) {
           project = taskModel.getTask().getStatus().getProject();
           if (project.canView(identity)) {

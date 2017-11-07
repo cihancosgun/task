@@ -44,6 +44,7 @@ import org.exoplatform.task.management.service.ViewStateService;
 import org.exoplatform.task.management.util.JsonUtil;
 import org.exoplatform.task.model.CommentModel;
 import org.exoplatform.task.model.GroupKey;
+import org.exoplatform.task.model.TaskFileModel;
 import org.exoplatform.task.model.TaskModel;
 import org.exoplatform.task.model.User;
 import org.exoplatform.task.service.*;
@@ -113,6 +114,10 @@ public class TaskController extends AbstractController {
   org.exoplatform.task.management.templates.confirmDeleteTask confirmDeleteTask;
   
   @Inject
+  @Path("taskFiles.gtmpl")
+  org.exoplatform.task.management.templates.taskFiles taskFiles;
+  
+  @Inject
   TaskFilterData filterData;
 
   @Inject
@@ -126,7 +131,7 @@ public class TaskController extends AbstractController {
     if (!TaskUtil.hasPermission(task)) {
       throw new UnAuthorizedOperationException(id, Task.class, getNoPermissionMsg());
     }
-    TaskModel model = TaskUtil.getTaskModel(id, false, bundle, securityContext.getRemoteUser(), taskService, orgService, userService, projectService);
+    TaskModel model = TaskUtil.getTaskModel(id, false, bundle, securityContext.getRemoteUser(), taskService, orgService, userService, projectService,false);
     TimeZone userTimezone = userService.getUserTimezone(securityContext.getRemoteUser());
   
   return detail.with()
@@ -206,7 +211,7 @@ public class TaskController extends AbstractController {
       if (loadAllComment == null) {
         loadAllComment = Boolean.FALSE;
       }
-      TaskModel model = TaskUtil.getTaskModel(id, loadAllComment, bundle, securityContext.getRemoteUser(), taskService, orgService, userService, projectService);
+      TaskModel model = TaskUtil.getTaskModel(id, loadAllComment, bundle, securityContext.getRemoteUser(), taskService, orgService, userService, projectService,false);
 
       return taskComments.with()
               .taskModel(model)
@@ -214,6 +219,25 @@ public class TaskController extends AbstractController {
               .ok().withCharset(Tools.UTF_8);
   }
 
+  @Resource
+  @Ajax
+  @MimeType.HTML
+  public Response renderTaskFiles(Long id, Boolean loadAllTaskFile, SecurityContext securityContext) throws EntityNotFoundException, UnAuthorizedOperationException {
+      Task task = taskService.getTask(id);
+      if (!TaskUtil.hasPermission(task)) {
+        throw new UnAuthorizedOperationException(id, Task.class, getNoPermissionMsg());
+      }
+      if (loadAllTaskFile == null) {
+    	  loadAllTaskFile = Boolean.FALSE;
+      }
+      TaskModel model = TaskUtil.getTaskModel(id, loadAllTaskFile, bundle, securityContext.getRemoteUser(), taskService, orgService, userService, projectService,false);
+
+      return taskFiles.with()
+              .taskModel(model)
+              .bundle(bundle)
+              .ok().withCharset(Tools.UTF_8);
+  }
+  
   @Resource
   @Ajax
   @MimeType.JSON
@@ -427,6 +451,38 @@ public class TaskController extends AbstractController {
     json.put("createdTimeString", df.format(model.getCreatedTime()));
     return Response.ok(json.toString()).withCharset(Tools.UTF_8);
   }
+  
+  
+  @Resource
+  @Ajax
+  @MimeType.JSON
+  public Response taskFile(Long taskId, String fileName, String fileType, Long fileSize, SecurityContext securityContext) throws EntityNotFoundException, JSONException, UnAuthorizedOperationException {
+    Task task = taskService.getTask(taskId);
+    String currentUser = securityContext.getRemoteUser();
+    if (!TaskUtil.hasPermission(task)) {
+      throw new UnAuthorizedOperationException(taskId, Task.class, getNoPermissionMsg());
+    }
+    TaskFile taskFile = taskService.addTaskFile(taskId, currentUser, fileName, fileType, fileSize); //Can throw TaskNotFoundException
+
+    //TODO:
+    TaskFileModel model = new TaskFileModel(taskFile, userService.loadUser(taskFile.getAuthor()));
+
+    DateFormat df = new SimpleDateFormat("MMM dd, yyyy HH:mm");
+    df.setTimeZone(userService.getUserTimezone(currentUser));
+
+    EntityEncoder encoder = HTMLEntityEncoder.getInstance();
+    JSONObject json = new JSONObject();
+    json.put("id", model.getId()); //Can throw JSONException (same for all #json.put methods below)
+    JSONObject user = new JSONObject();
+    user.put("username", encoder.encode(model.getAuthor().getUsername()));
+    user.put("displayName", encoder.encode(model.getAuthor().getDisplayName()));
+    user.put("avatar", model.getAuthor().getAvatar());
+    json.put("author", user);
+    json.put("fileName", encoder.encode(model.getFileName()));
+    json.put("createdTime", model.getCreatedTime().getTime());
+    json.put("createdTimeString", df.format(model.getCreatedTime()));
+    return Response.ok(json.toString()).withCharset(Tools.UTF_8);
+  }
 
   //TODO: this method is not used any more?
   @Resource
@@ -457,6 +513,8 @@ public class TaskController extends AbstractController {
           .ok()
           .withCharset(Tools.UTF_8);
   }
+  
+  
 
   @Resource
   @Ajax
@@ -471,6 +529,21 @@ public class TaskController extends AbstractController {
       return Response.status(401).body("Only owner or project manager can delete the comment");
     }
   }
+  
+  @Resource
+  @Ajax
+  @MimeType("text/plain")
+  public Response deleteTaskFile(Long fileId) throws EntityNotFoundException {
+    TaskFile taskFile = taskService.getTaskFile(fileId);
+    Identity currIdentity = ConversationState.getCurrent().getIdentity();
+    if (TaskUtil.canDeleteTaskFile(currIdentity, taskFile)) {
+      taskService.removeTaskFile(fileId);
+      return Response.ok("Delete file successfully!");
+    } else {
+      return Response.status(401).body("Only owner or project manager can delete the file");
+    }
+  }
+
 
   @Resource
   @Ajax

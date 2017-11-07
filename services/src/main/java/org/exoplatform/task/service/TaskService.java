@@ -10,6 +10,7 @@ import org.exoplatform.task.domain.Comment;
 import org.exoplatform.task.domain.Label;
 import org.exoplatform.task.domain.Status;
 import org.exoplatform.task.domain.Task;
+import org.exoplatform.task.domain.TaskFile;
 import org.exoplatform.task.domain.ChangeLog;
 import org.exoplatform.task.exception.EntityNotFoundException;
 
@@ -23,6 +24,8 @@ public interface TaskService {
   String TASK_UPDATE = "exo.task.taskUpdate";
 
   String TASK_COMMENT_CREATION = "exo.task.taskCommentCreation";
+  
+  String TASK_TASKFILE_CREATION = "exo.task.taskTaskFileCreation";
 
   /**
    * Create a new task.
@@ -112,4 +115,15 @@ public interface TaskService {
   Task findTaskByActivityId(String activityId);
 
   Set<String> getCoworker(long taskId);
+  
+  
+  TaskFile getTaskFile(long fileId);
+
+  ListAccess<TaskFile> getTaskFiles(long taskId);
+
+  TaskFile addTaskFile(long taskId, String username, String fileName, String fileType, Long fileSize) throws EntityNotFoundException;
+
+  void removeTaskFile(long fileId) throws EntityNotFoundException;
+  
+  
 }

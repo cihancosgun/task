@@ -17,27 +17,48 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.exoplatform.task.dao;
+package org.exoplatform.task.model;
+
+import java.util.Date;
+
+import org.exoplatform.services.security.Identity;
+import org.exoplatform.task.domain.TaskFile;
+import org.exoplatform.task.domain.Task;
+import org.exoplatform.task.util.TaskUtil;
 
 /**
  * @author <a href="mailto:tuyennt@exoplatform.com">Tuyen Nguyen The</a>.
  */
-public interface DAOHandler {
-  public ProjectHandler getProjectHandler();
+public class TaskFileModel {
+  private final TaskFile taskFile;
+  private final User author;
 
-  public TaskHandler getTaskHandler();
-  
-  public LabelHandler getLabelHandler();
-  
-  public LabelTaskMappingHandler getLabelTaskMappingHandler();
+  public TaskFileModel(TaskFile taskFile, User author) {
+    this.taskFile = taskFile;
+    this.author = author;
+  }
 
-  public CommentHandler getCommentHandler();
+  public User getAuthor() {
+    return this.author;
+  }
 
-  public TaskLogHandler getTaskLogHandler();
+  public Date getCreatedTime() {
+    return taskFile.getCreatedTime();
+  }
 
-  public StatusHandler getStatusHandler();
+  public String getFileName() {
+    return taskFile.getFileName();
+  }
 
-  public UserSettingHandler getUserSettingHandler();
-  
-  public TaskFileHandler getTaskFileHandler();
+  public long getId() {
+    return taskFile.getId();
+  }
+
+  public Task getTask() {
+    return taskFile.getTask();
+  }
+
+  public boolean canEdit(Identity identity) {
+    return TaskUtil.canDeleteTaskFile(identity, taskFile);
+  }
 }

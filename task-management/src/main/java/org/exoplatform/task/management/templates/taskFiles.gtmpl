@@ -1,0 +1,79 @@
+#{param name=taskModel/}
+#{param name=bundle/}
+
+<%
+    import org.exoplatform.task.util.TaskUtil;
+    import org.exoplatform.task.util.ResourceUtil;
+    import org.exoplatform.services.security.ConversationState;
+  	import org.exoplatform.commons.utils.HTMLEntityEncoder;
+
+  	def encoder = HTMLEntityEncoder.getInstance();
+  	
+  	def taskFileCount = taskModel.getTaskFileCount();
+    def taskFiles = taskModel.getTaskFiles();
+    def currentUser = taskModel.getCurrentUser();
+    def allTaskFilesLoaded = taskFileCount == taskFiles.size();
+     
+    def identity = ConversationState.getCurrent().getIdentity();
+%>
+
+<div class="taskFileBox" data-alltaskFile="${allTaskFilesLoaded}">
+    <% if (taskFileCount > 2) {%>
+    <div class="taskFileListInfo ">
+        <a href="javascript:void(0);" class="load-all-taskFiles" data-loadall="${!allTaskFilesLoaded}"><%= ResourceUtil.resolveMessage(bundle, !allTaskFilesLoaded ? "taskFile.message.showAll" : "taskFile.message.hideAll", taskFileCount);%></a>
+    </div>
+    <%}%>
+    <% if (taskFileCount == 0) {%>
+    <div class="empty center">&{taskFile.message.noTaskFile}</div>
+    <%} else {%>
+    <div class="taskFileList">
+        <% for (def taskFile in taskFiles) {%>
+        <div class="taskFileItem" data-taskFileid="${taskFile.id}">
+            <div class="taskFileLeft pull-left">
+                <a class="avatarXSmall" href="${taskFile.author.url}">
+                    <img src="${taskFile.author.avatar}" alt="${encoder.encode(taskFile.author.displayName)}">
+                </a>
+            </div><!--end taskFileLeft-->
+            <div class="taskFileRight">
+                <div class="author">
+                    <a href="${taskFile.author.url}">${encoder.encode(taskFile.author.displayName)}</a>
+                                    <span class="date">
+                                        <%= TaskUtil.getPeriod(taskFile.getCreatedTime().getTime(), bundle)%>
+                                     </span>
+                </div>
+                <p class="contentTaskFile">
+                    ${taskFile.fileName}
+                </p>
+            </div><!--end taskFileRight-->
+
+            <% if (taskFile.canEdit(identity)) {%>
+                <a href="javascript:void(0)" class="actionIcon controllDelete" data-toggle="tooltip" data-placement="left" title="&{label.remove}">
+                    <i class="uiIconTrashMini uiIconLightGray "></i>
+                </a>
+            <%}%>
+        </div>
+        <%}%>
+    </div>
+    <%}%>
+    <div  class="taskFileList inputContainer">
+        <div  class="taskFileItem taskFileFormBox">
+             <form action="#" method="POST">
+                <div class="clearfix">
+                    <div class="fileLeft pull-left">
+                        <a class="avatarXSmall" href="${currentUser.url}">
+                            <img src="${currentUser.avatar}" alt="${encoder.encode(currentUser.displayName)}">
+                        </a>
+                    </div><!--end fileLeft-->
+                    <div class="fileRight">
+                        <div class="fileInputBox ">
+                            <div class="fileInput">
+                            <input title="&{files.message.addYourFile}" name="file" type="file" id="taskFile">                           
+                            </div>
+                            <button id="taskFileButton" type="submit" class="btn btn-primary">&{files.message.addYourFile}</button>
+                        </div>
+                    </div><!--end fileRight-->
+                </div>
+            </form>
+        </div> <!--end taskFileItem-->
+    </div><!--end taskFilelist-->
+</div>
