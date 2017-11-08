@@ -244,6 +244,16 @@ $(document).ready(function() {
             commentContainer.html(taApp.convertURLsAsLinks(commentContainer.html()));
         });
     };
+    
+    var initTaskFileEditor = function() {
+    	$form.find('#taskFile')[0].value = "";        
+    };
+    var enhanceTaskFilesLinks = function() {
+        $rightPanelContent.find('.contentTaskFile').each(function(index, ele) {
+            var taskFileContainer = $(ele);
+            taskFileContainer.html(taApp.convertURLsAsLinks(taskFileContainer.html()));
+        });
+    };
 
     $rightPanel.on('submit', '.commentFormBox form', function(e) {
         e.preventDefault();
@@ -275,22 +285,16 @@ $(document).ready(function() {
     
     
     $rightPanel.on('submit', '.taskFileFormBox form', function(e) {
-        e.preventDefault();
-        alert(1);
+        e.preventDefault();        
         var $form = $(e.target).closest('form');
         var $taskDetail = $form.closest('[data-taskid]');
         var $allTaskFiles = $form.closest('[data-alltaskFile]');
         var $taskFileContainer = $taskDetail.find('#tab-taskFiles');
 
         var loadAllTaskFile = $allTaskFiles.data('alltaskFile');
-        var taskId = $taskDetail.data('taskid');
+        var taskId = $taskDetail.data('taskid');        
         var taskFileInput = $form.find('#taskFile')[0];
-        alert(taskFileInput);
-        console.log('task file input:');
-        console.log(taskFileInput[0]);
-        var files = taskFileInput[0].files;
-        console.log(files);
-        console.log(files.length);
+        var files = taskFileInput.files;
         if(files == undefined || files.length == 0){
         	alert('Please select your file!');
             return false;	
@@ -301,7 +305,7 @@ $(document).ready(function() {
         
         var postTaskFileURL = $form.jzURL('TaskController.taskFile');
         var xhr = $.post(postTaskFileURL, { taskId: taskId, fileName: fileName, fileType:fileType, fileSize:fileSize}, function(data) {
-            $taskFileContainer.jzLoad('TaskController.renderTaskTaskFiles()', {id: taskId, loadAllTaskFile: loadAllTaskFile}, function() {
+            $taskFileContainer.jzLoad('TaskController.renderTaskFiles()', {id: taskId, loadAllTaskFile: loadAllTaskFile}, function() {
                 enhanceTaskFilesLinks();
                 initTaskFileEditor();
             });
@@ -331,7 +335,7 @@ $(document).ready(function() {
             success: function(data) {
                 $commentContainer.jzLoad('TaskController.renderTaskComments()', {id: taskId, loadAllComment: loadAllComment}, function() {
                   enhanceCommentsLinks();
-                  initCommentEditor();
+//                  initCommentEditor();
                 });
             },
             error: function(xhr, textStatus, errorThrown) {
@@ -349,7 +353,7 @@ $(document).ready(function() {
         var $task = $a.closest('[data-taskid]');
 
         var taskId = $task.data('taskid');
-        var taskFileId = $taskFile.data('taskFileid');
+        var taskFileId = $taskFile.data('taskfileid');
         var loadAllTaskFile = $allTaskFiles.data('alltaskFile');
         var deleteURL = $a.jzURL('TaskController.deleteTaskFile');
         $.ajax({
@@ -357,7 +361,7 @@ $(document).ready(function() {
             data: {fileId: taskFileId},
             type: 'POST',
             success: function(data) {
-                $taskFileContainer.jzLoad('TaskController.renderTaskTaskFiles()', {id: taskId, loadAllTaskFile: loadAllTaskFile}, function() {
+                $taskFileContainer.jzLoad('TaskController.renderTaskFiles()', {id: taskId, loadAllTaskFile: loadAllTaskFile}, function() {
                   enhanceTaskFilesLinks();
                   initTaskFileEditor();
                 });
@@ -385,16 +389,16 @@ $(document).ready(function() {
     });
     
     $rightPanel.on('click', 'a.load-all-taskFiles', function(e) {
-        e.preventDefault();
+        e.preventDefault();        
         var $a = $(e.target).closest('a');
         var loadAll = $a.data('loadall');
-        var $taskFile = $a.closest('#tab-taskFiles');
-        var taskId = $taskFile.closest('[data-taskid]').data('taskid');
-        $taskFile.jzLoad('TaskController.renderTaskTaskFiles()', {id: taskId, loadAllTaskFile: loadAll}, function(html, status, xhr) {
+        var $taskFile = $a.closest('#tab-taskFiles');        
+        var taskId = $taskFile.closest('[data-taskid]').data('taskid');        
+        $taskFile.jzLoad('TaskController.renderTaskFiles()', {id: taskId, loadAllTaskFile: loadAll}, function(html, status, xhr) {
           if (xhr.status >= 400) {
             taApp.showWarningDialog(xhr.responseText);
           } else {
-            enhanceTaskFilesLinks();
+        	  enhanceTaskFilesLinks();
             initTaskFileEditor();            
           }
         });

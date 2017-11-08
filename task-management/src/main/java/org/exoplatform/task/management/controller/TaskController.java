@@ -59,6 +59,7 @@ import javax.inject.Inject;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.logging.Level;
 
 /**
  * @author <a href="mailto:tuyennt@exoplatform.com">Tuyen Nguyen The</a>.
@@ -230,8 +231,7 @@ public class TaskController extends AbstractController {
       if (loadAllTaskFile == null) {
     	  loadAllTaskFile = Boolean.FALSE;
       }
-      TaskModel model = TaskUtil.getTaskModel(id, loadAllTaskFile, bundle, securityContext.getRemoteUser(), taskService, orgService, userService, projectService,false);
-
+      TaskModel model = TaskUtil.getTaskModel(id, false, bundle, securityContext.getRemoteUser(), taskService, orgService, userService, projectService,loadAllTaskFile);
       return taskFiles.with()
               .taskModel(model)
               .bundle(bundle)

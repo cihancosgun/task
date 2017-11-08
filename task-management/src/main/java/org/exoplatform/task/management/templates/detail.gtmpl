@@ -332,7 +332,7 @@ data-startdate="<%=df.format(startDate)%>" data-duration="${duration}">
             <a href="#tab-changes" data-toggle="tab">&{label.changes}</a>
 </li>
   <li class="taskTabs">
-            <a href="#tab-files" data-toggle="tab">&{label.files}</a>
+            <a href="#tab-taskFiles" data-toggle="tab">&{label.files}</a>
 </li>
     </ul>
 <div id="myTabContent" class="tab-content">
@@ -342,7 +342,7 @@ data-startdate="<%=df.format(startDate)%>" data-duration="${duration}">
         <div id="tab-changes" class="tab-pane fade taskLogs">
 
         </div>
-	<div id="tab-files" class="tab-pane">
+	<div id="tab-taskFiles" class="tab-pane">
 	    #{include path=taskFiles.gtmpl /}
     </div>         
 </div>
