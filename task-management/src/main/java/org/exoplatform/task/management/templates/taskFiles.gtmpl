@@ -42,22 +42,22 @@
                                      </span>
                 </div>
                 <p class="contentTaskFile">
-                    ${taskFile.fileName}
+                  <a href="/rest/jcr/repository/collaboration/exo-task-files/${taskFile.fileName}" target="_blank">${taskFile.fileName}</a>
                 </p>
-            </div><!--end taskFileRight-->
+            </div><!--end taskFileRight-->       
 
             <% if (taskFile.canEdit(identity)) {%>
                 <a href="javascript:void(0)" class="actionIcon controllDelete" data-toggle="tooltip" data-placement="left" title="&{label.remove}">
                     <i class="uiIconTrashMini uiIconLightGray "></i>
                 </a>
             <%}%>
-        </div>
+        </div>       
         <%}%>
     </div>
     <%}%>
     <div  class="taskFileList inputContainer">
         <div  class="taskFileItem taskFileFormBox">
-             <form action="#" method="POST">
+             <form action="#" method="POST" enctype="multipart/form-data">
                 <div class="clearfix">
                     <div class="fileLeft pull-left">
                         <a class="avatarXSmall" href="${currentUser.url}">
@@ -67,7 +67,7 @@
                     <div class="fileRight">
                         <div class="fileInputBox ">
                             <div class="fileInput">
-                            <input title="&{files.message.addYourFile}" name="file" type="file" id="taskFile" >                           
+                            <input title="&{files.message.addYourFile}" name="file" type="file" id="taskFile">                           
                             </div>
                             <button id="taskFileButton" type="submit" class="btn btn-primary">&{files.message.addYourFile}</button>
                         </div>

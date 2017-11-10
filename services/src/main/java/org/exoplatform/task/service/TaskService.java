@@ -3,6 +3,7 @@ package org.exoplatform.task.service;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.fileupload.FileItem;
 import org.exoplatform.commons.utils.ListAccess;
 import org.exoplatform.task.dao.OrderBy;
 import org.exoplatform.task.dao.TaskQuery;
@@ -121,7 +122,7 @@ public interface TaskService {
 
   ListAccess<TaskFile> getTaskFiles(long taskId);
 
-  TaskFile addTaskFile(long taskId, String username, String fileName, String fileType, Long fileSize) throws EntityNotFoundException;
+  TaskFile addTaskFile(long taskId, String username, String fileName, String fileType, Long fileSize, String nodeId) throws EntityNotFoundException;
 
   void removeTaskFile(long fileId) throws EntityNotFoundException;
   

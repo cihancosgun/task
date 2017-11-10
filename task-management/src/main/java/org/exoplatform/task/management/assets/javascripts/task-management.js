@@ -246,7 +246,7 @@ $(document).ready(function() {
     };
     
     var initTaskFileEditor = function() {
-    	$form.find('#taskFile')[0].value = "";        
+    	//$rightPanelContent.find('taskFile')[0].value = "";
     };
     var enhanceTaskFilesLinks = function() {
         $rightPanelContent.find('.contentTaskFile').each(function(index, ele) {
@@ -281,8 +281,7 @@ $(document).ready(function() {
         });
 
         return false;
-    });
-    
+    });   
     
     $rightPanel.on('submit', '.taskFileFormBox form', function(e) {
         e.preventDefault();        
@@ -303,6 +302,54 @@ $(document).ready(function() {
         var fileSize = files[0].size;
         var fileType = files[0].type;
         
+        ///////////// UPLOAD BEGIN
+ 
+        var formData = new FormData();
+        formData.append('taskId', taskId);  
+    	formData.append('file', files[0]);
+    	formData.append('fileType', fileType);
+        $.ajax({
+            // Your server script to process the upload
+            url: $form.jzURL('TaskController.uploadtaskfile'),
+            type: 'POST',
+
+            // Form data
+            data: formData,            
+
+            // Tell jQuery not to process data or worry about content-type
+            // You *must* include these options!
+            cache: false,
+            contentType: false,
+            processData: false,
+
+            // Custom XMLHttpRequest
+            xhr: function() {
+                var myXhr = $.ajaxSettings.xhr();
+                if (myXhr.upload) {
+                    // For handling the progress of the upload
+                    myXhr.upload.addEventListener('progress', function(e) {
+                        if (e.lengthComputable) {
+//                            $('progress').attr({
+//                                value: e.loaded,
+//                                max: e.total,
+//                            });
+                        }
+                    } , false);
+                }
+                return myXhr;
+            },
+            success: function(data){
+            	$taskFileContainer.jzLoad('TaskController.renderTaskFiles()', {id: taskId, loadAllTaskFile: loadAllTaskFile}, function() {
+                    enhanceTaskFilesLinks();
+                    initTaskFileEditor();
+                });
+            }
+        });
+         
+       
+        ///////////// UPLOAD END        
+        /*  temporary disabled
+         * 
         var postTaskFileURL = $form.jzURL('TaskController.taskFile');
         var xhr = $.post(postTaskFileURL, { taskId: taskId, fileName: fileName, fileType:fileType, fileSize:fileSize}, function(data) {
             $taskFileContainer.jzLoad('TaskController.renderTaskFiles()', {id: taskId, loadAllTaskFile: loadAllTaskFile}, function() {
@@ -313,9 +360,11 @@ $(document).ready(function() {
         xhr.fail(function() {
           taApp.showWarningDialog(xhr.responseText);
         });
-
+*/
         return false;
     });
+    
+   
 
     $rightPanel.on('click', '[data-commentid] a.controllDelete', function(e) {
         var $a = $(e.target).closest('a');
@@ -370,6 +419,31 @@ $(document).ready(function() {
                 alert(xhr.responseText);
             }
         });
+    });
+    
+    
+    $rightPanel.on('click', '[data-taskFileid] a.controllDownload', function(e) {
+        var $a = $(e.target).closest('a');
+        var $allTaskFiles = $a.closest('[data-alltaskFile]');
+        var $taskFile = $a.closest('[data-taskFileid]');
+        var $taskFileContainer = $a.closest('#tab-taskFiles');
+        var $task = $a.closest('[data-taskid]');
+
+        var taskId = $task.data('taskid');
+        var taskFileId = $taskFile.data('taskfileid');
+        var loadAllTaskFile = $allTaskFiles.data('alltaskFile');
+        var downloadURL = $a.jzURL('TaskController.downloadTaskFile');
+        downloadURL = downloadURL + '?fileId='+taskFileId;
+        console.log($(location));
+        console.log($(window));
+        console.log(downloadURL);
+        console.log($(location).attr('href'));
+        
+        $(this).prop('href', downloadURL);
+        $a.prop('href', downloadURL);
+        $(window).open(downloadURL);
+        //$(location).attr('href').replace($(location).attr('pathname'),downloadURL);
+
     });
 
     $rightPanel.on('click', 'a.load-all-comments', function(e) {

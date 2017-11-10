@@ -871,24 +871,44 @@ public final class TaskUtil {
   }
   
   public static boolean canDeleteTaskFile(Identity identity, TaskFile taskFile) {
-	    if (taskFile == null || identity == null) {
-	      return false;
-	    }
+    if (taskFile == null || identity == null) {
+      return false;
+    }
 
-	    // Owner can delete his comment
-	    if (identity.getUserId().equals(taskFile.getAuthor())) {
-	      return true;
-	    }
+    // Owner can delete his comment
+    if (identity.getUserId().equals(taskFile.getAuthor())) {
+      return true;
+    }
 
-	    // Project manager can delete comment
-	    Task task = taskFile.getTask();
-	    if (task.getStatus() != null) {
-	      Project pj = task.getStatus().getProject();
-	      return pj.canEdit(identity);
-	    }
+    // Project manager can delete comment
+    Task task = taskFile.getTask();
+    if (task.getStatus() != null) {
+      Project pj = task.getStatus().getProject();
+      return pj.canEdit(identity);
+    }
 
-	    return false;
-	  }
+    return false;
+  }
+  
+  public static boolean canDownloadTaskFile(Identity identity, TaskFile taskFile) {
+    if (taskFile == null || identity == null) {
+      return false;
+    }
+
+    // Owner can download
+    if (identity.getUserId().equals(taskFile.getAuthor())) {
+      return true;
+    }
+
+    // Project manager can download 
+    Task task = taskFile.getTask();
+    if (task.getStatus() != null) {
+      Project pj = task.getStatus().getProject();
+      return pj.canView(identity);
+    }
+
+    return false;
+  }
   
   private static boolean isLabelIn(Label child, Label parent) {
     Label pr = child;

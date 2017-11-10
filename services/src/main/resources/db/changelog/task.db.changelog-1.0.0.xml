@@ -425,13 +425,16 @@
   
   
    <!-- Definition of TASK_FILES table -->
-  <changeSet author="task" id="1.0.0-99">
+  <changeSet author="task" id="1.0.0-100">
     <createTable tableName="TASK_FILES">
       <column name="FILE_ID" type="BIGINT" autoIncrement="${autoIncrement}" startWith="1">
         <constraints primaryKey="true" primaryKeyName="PK_TASK_FILES" nullable="false"/>
       </column>
       <column name="AUTHOR" type="NVARCHAR(100)">
         <constraints nullable="false"/>
+      </column>
+      <column name="NODE_ID" type="NVARCHAR(2000)">
+        <constraints nullable="true"/>
       </column>
       <column name="FILE_NAME" type="NVARCHAR(2000)">
         <constraints nullable="false"/>

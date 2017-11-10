@@ -47,6 +47,9 @@ public class TaskFile {
 
   private String author;
 
+  @Column(name = "NODE_ID")
+  private String nodeId;
+  
   @Column(name = "FILE_NAME")
   private String fileName;
   
@@ -82,6 +85,14 @@ public class TaskFile {
     this.author = author;
   }
 
+  public String getNodeId() {
+    return nodeId;
+  }
+
+  public void setNodeId(String nodeId) {
+    this.nodeId = nodeId;
+  }
+	  
   public String getFileName() {
     return fileName;
   }
@@ -127,6 +138,7 @@ public class TaskFile {
     TaskFile c = new TaskFile();
     c.setId(getId());
     c.setAuthor(getAuthor());
+    c.setNodeId(getNodeId());    
     c.setFileName(getFileName());
     c.setFileType(getFileType());
     c.setFileSize(getFileSize());

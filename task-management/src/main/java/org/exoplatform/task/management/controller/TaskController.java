@@ -22,6 +22,9 @@ package org.exoplatform.task.management.controller;
 import juzu.*;
 import juzu.impl.common.Tools;
 import juzu.request.SecurityContext;
+import juzu.request.RequestContext;
+
+import org.apache.commons.fileupload.FileItem;
 import org.exoplatform.commons.juzu.ajax.Ajax;
 import org.exoplatform.commons.utils.HTMLEntityEncoder;
 import org.exoplatform.commons.utils.ListAccess;
@@ -56,6 +59,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import javax.inject.Inject;
+import javax.jcr.Node;
+
+import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -106,7 +112,7 @@ public class TaskController extends AbstractController {
   @Path("comments.gtmpl")
   org.exoplatform.task.management.templates.comments comments;
 
-  @Inject
+  @Inject 
   @Path("projectTaskListView.gtmpl")
   org.exoplatform.task.management.templates.projectTaskListView taskListView;
 
@@ -457,12 +463,13 @@ public class TaskController extends AbstractController {
   @Ajax
   @MimeType.JSON
   public Response taskFile(Long taskId, String fileName, String fileType, Long fileSize, SecurityContext securityContext) throws EntityNotFoundException, JSONException, UnAuthorizedOperationException {
+	
     Task task = taskService.getTask(taskId);
     String currentUser = securityContext.getRemoteUser();
     if (!TaskUtil.hasPermission(task)) {
       throw new UnAuthorizedOperationException(taskId, Task.class, getNoPermissionMsg());
     }
-    TaskFile taskFile = taskService.addTaskFile(taskId, currentUser, fileName, fileType, fileSize); //Can throw TaskNotFoundException
+    TaskFile taskFile = taskService.addTaskFile(taskId, currentUser, fileName, fileType, fileSize,""); //Can throw TaskNotFoundException
 
     //TODO:
     TaskFileModel model = new TaskFileModel(taskFile, userService.loadUser(taskFile.getAuthor()));
@@ -482,6 +489,56 @@ public class TaskController extends AbstractController {
     json.put("createdTime", model.getCreatedTime().getTime());
     json.put("createdTimeString", df.format(model.getCreatedTime()));
     return Response.ok(json.toString()).withCharset(Tools.UTF_8);
+  }
+  
+  @Action
+  @Ajax
+  @MimeType.JSON
+  public Response.Content uploadtaskfile(Long taskId, org.apache.commons.fileupload.FileItem file, String fileType, RequestContext requestContext, SecurityContext securityContext) throws EntityNotFoundException, JSONException, UnAuthorizedOperationException, Exception {
+	  
+	LOG.info("upload task file called");
+	String currentUser = securityContext.getRemoteUser();
+	Task task = taskService.getTask(taskId);
+    if (!TaskUtil.hasPermission(task)) {
+      throw new UnAuthorizedOperationException(taskId, Task.class, getNoPermissionMsg());
+    }
+   
+	 LOG.info(requestContext.getParameters().toString());
+	 LOG.info(file.getName());
+	 JSONObject json = new JSONObject();
+     if (file != null) {
+    	 Node node = JCRUtil.addTaskFileToNode(file, currentUser);
+    	 if(node != null) {
+    		 LOG.info("file node id : " + node.getUUID());
+    		 String fileName = file.getName();
+     		 Long fileSize = file.getSize();
+    		 
+    		 TaskFile taskFile = taskService.addTaskFile(taskId, currentUser, fileName, fileType, fileSize, node.getUUID()); //Can throw TaskNotFoundException
+
+		     //TODO:
+		     TaskFileModel model = new TaskFileModel(taskFile, userService.loadUser(taskFile.getAuthor()));
+
+		     EntityEncoder encoder = HTMLEntityEncoder.getInstance();
+		     
+		     DateFormat df = new SimpleDateFormat("MMM dd, yyyy HH:mm");
+		     df.setTimeZone(userService.getUserTimezone(currentUser));
+    		 
+		     json.put("id", model.getId()); //Can throw JSONException (same for all #json.put methods below)
+		     JSONObject user = new JSONObject();
+		     user.put("username", encoder.encode(model.getAuthor().getUsername()));
+		     user.put("displayName", encoder.encode(model.getAuthor().getDisplayName()));
+		     user.put("avatar", model.getAuthor().getAvatar());
+		     json.put("author", user);
+		     json.put("fileName", encoder.encode(model.getFileName()));
+		     json.put("createdTime", model.getCreatedTime().getTime());
+		     json.put("createdTimeString", df.format(model.getCreatedTime()));
+    		 
+    		 
+    		 
+    		 json.append("uuid", node.getUUID());
+    	 }
+     }
+     return Response.ok(json.toString()).withCharset(Tools.UTF_8);
   }
 
   //TODO: this method is not used any more?
@@ -543,6 +600,24 @@ public class TaskController extends AbstractController {
       return Response.status(401).body("Only owner or project manager can delete the file");
     }
   }
+  
+  @Resource
+  @Ajax
+  @MimeType("application/octet-stream")
+  public Response downloadTaskFile(Long fileId) throws EntityNotFoundException, Exception {
+	  LOG.info("File is downloading");
+	  LOG.info("File id : "+ String.valueOf(fileId));
+    TaskFile taskFile = taskService.getTaskFile(fileId);
+    Identity currIdentity = ConversationState.getCurrent().getIdentity();
+    if (TaskUtil.canDownloadTaskFile(currIdentity, taskFile)) {
+      InputStream in = JCRUtil.getFileStreamFromJCR(taskFile.getNodeId());     
+      return Response.ok(in).withMimeType(taskFile.getFileType());
+            
+    } else {
+      return Response.status(401).body("Only owner or project manager can delete the file");
+    }
+  }
+
 
 
   @Resource

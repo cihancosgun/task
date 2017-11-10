@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.fileupload.FileItem;
 import org.exoplatform.commons.api.persistence.ExoTransactional;
 import org.exoplatform.commons.utils.ListAccess;
 import org.exoplatform.services.listener.ListenerService;
@@ -43,6 +44,7 @@ import org.exoplatform.task.domain.ChangeLog;
 import org.exoplatform.task.exception.EntityNotFoundException;
 import org.exoplatform.task.service.TaskPayload;
 import org.exoplatform.task.service.TaskService;
+import org.exoplatform.task.util.JCRUtil;
 
 /**
  * Created by The eXo Platform SAS
@@ -315,7 +317,7 @@ public class TaskServiceImpl implements TaskService {
 
   @Override
   @ExoTransactional
-  public TaskFile addTaskFile(long id, String username, String fileName, String fileType, Long fileSize) throws EntityNotFoundException {
+  public TaskFile addTaskFile(long id, String username, String fileName, String fileType, Long fileSize, String nodeId) throws EntityNotFoundException {
 
     Task task = getTask(id); //Can throws TaskNotFoundException
 
@@ -325,10 +327,12 @@ public class TaskServiceImpl implements TaskService {
     newTaskFile.setFileName(fileName);
     newTaskFile.setFileType(fileType);
     newTaskFile.setFileSize(fileSize);
+    newTaskFile.setNodeId(nodeId);
     newTaskFile.setCreatedTime(new Date());
     TaskFile obj = daoHandler.getTaskFileHandler().create(newTaskFile);
-
+       
     try {
+      //JCRUtil.addTaskFileToNode(fileItem, username);//check
       listenerService.broadcast(TASK_TASKFILE_CREATION, this, obj);
     } catch (Exception e) {
       LOG.error("Error while broadcasting task creation event", e);
@@ -348,6 +352,10 @@ public class TaskServiceImpl implements TaskService {
       throw new EntityNotFoundException(fileId, Comment.class);
     }
 
+    try {
+    	JCRUtil.removeFileFromJCR(taskFile.getNodeId());
+    }catch(Exception ex) {    	
+    }
     daoHandler.getTaskFileHandler().delete(taskFile);
   }
   
