@@ -28,29 +28,33 @@
     <%} else {%>
     <div class="taskFileList">
         <% for (def taskFile in taskFiles) {%>
-        <div class="taskFileItem" data-taskFileid="${taskFile.id}">
+        <div class="taskFileItem" data-taskFileid="${taskFile.id}">         
+            
             <div class="taskFileLeft pull-left">
                 <a class="avatarXSmall" href="${taskFile.author.url}">
                     <img src="${taskFile.author.avatar}" alt="${encoder.encode(taskFile.author.displayName)}">
                 </a>
             </div><!--end taskFileLeft-->
-            <div class="taskFileRight">
+                        
+            <div class="taskFileRight">                   
                 <div class="author">
                     <a href="${taskFile.author.url}">${encoder.encode(taskFile.author.displayName)}</a>
                                     <span class="date">
                                         <%= TaskUtil.getPeriod(taskFile.getCreatedTime().getTime(), bundle)%>
                                      </span>
                 </div>
+                <br>
                 <p class="contentTaskFile">
                   <a href="/rest/jcr/repository/collaboration/exo-task-files/${taskFile.fileName}" target="_blank">${taskFile.fileName}</a>
-                </p>
-            </div><!--end taskFileRight-->       
-
-            <% if (taskFile.canEdit(identity)) {%>
-                <a href="javascript:void(0)" class="actionIcon controllDelete" data-toggle="tooltip" data-placement="left" title="&{label.remove}">
-                    <i class="uiIconTrashMini uiIconLightGray "></i>
-                </a>
-            <%}%>
+                  
+                   <% if (taskFile.canEdit(identity)) {%>
+	                <a href="javascript:void(0)" class="actionIcon controllDelete" data-toggle="tooltip" data-placement="left" title="&{label.remove}">
+	                    <i class="uiIconTrashMini uiIconLightGray "></i>
+	                </a>
+	            <%}%>
+                </p>                                
+            </div><!--end taskFileRight-->
+                                                             
         </div>       
         <%}%>
     </div>
@@ -67,7 +71,7 @@
                     <div class="fileRight">
                         <div class="fileInputBox ">
                             <div class="fileInput">
-                            <input title="&{files.message.addYourFile}" name="file" type="file" id="taskFile">                           
+                            <input title="&{files.message.addYourFile}" name="file" type="file" id="taskFile" multiple>                           
                             </div>
                             <button id="taskFileButton" type="submit" class="btn btn-primary">&{files.message.addYourFile}</button>
                         </div>

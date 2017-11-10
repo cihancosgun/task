@@ -298,69 +298,61 @@ $(document).ready(function() {
         	alert('Please select your file!');
             return false;	
         }
-        var fileName = files[0].name;
-        var fileSize = files[0].size;
-        var fileType = files[0].type;
         
-        ///////////// UPLOAD BEGIN
- 
-        var formData = new FormData();
-        formData.append('taskId', taskId);  
-    	formData.append('file', files[0]);
-    	formData.append('fileType', fileType);
-        $.ajax({
-            // Your server script to process the upload
-            url: $form.jzURL('TaskController.uploadtaskfile'),
-            type: 'POST',
+        for(var i=0; i<files.length;i++){
+        	var fileName = files[i].name;
+            var fileSize = files[i].size;
+            var fileType = files[i].type;
+            
+            ///////////// UPLOAD BEGIN
+            var formData = new FormData();
+            formData.append('taskId', taskId);  
+        	formData.append('file', files[i]);
+        	formData.append('fileType', fileType);
+            $.ajax({
+                // Your server script to process the upload
+                url: $form.jzURL('TaskController.uploadtaskfile'),
+                type: 'POST',
 
-            // Form data
-            data: formData,            
+                // Form data
+                data: formData,            
 
-            // Tell jQuery not to process data or worry about content-type
-            // You *must* include these options!
-            cache: false,
-            contentType: false,
-            processData: false,
+                // Tell jQuery not to process data or worry about content-type
+                // You *must* include these options!
+                cache: false,
+                contentType: false,
+                processData: false,
 
-            // Custom XMLHttpRequest
-            xhr: function() {
-                var myXhr = $.ajaxSettings.xhr();
-                if (myXhr.upload) {
-                    // For handling the progress of the upload
-                    myXhr.upload.addEventListener('progress', function(e) {
-                        if (e.lengthComputable) {
-//                            $('progress').attr({
-//                                value: e.loaded,
-//                                max: e.total,
-//                            });
-                        }
-                    } , false);
+                // Custom XMLHttpRequest
+                xhr: function() {
+                    var myXhr = $.ajaxSettings.xhr();
+                    if (myXhr.upload) {
+                        // For handling the progress of the upload
+                        myXhr.upload.addEventListener('progress', function(e) {
+                            if (e.lengthComputable) {
+//                                $('progress').attr({
+//                                    value: e.loaded,
+//                                    max: e.total,
+//                                });
+                            }
+                        } , false);
+                    }
+                    return myXhr;
+                },
+                success: function(data){   
+                	 
+	                    $taskFileContainer.jzLoad('TaskController.renderTaskFiles()', {id: taskId, loadAllTaskFile: loadAllTaskFile}, function() {
+	                        enhanceTaskFilesLinks();
+	                        initTaskFileEditor();
+	                    });
+                	 
                 }
-                return myXhr;
-            },
-            success: function(data){
-            	$taskFileContainer.jzLoad('TaskController.renderTaskFiles()', {id: taskId, loadAllTaskFile: loadAllTaskFile}, function() {
-                    enhanceTaskFilesLinks();
-                    initTaskFileEditor();
-                });
-            }
-        });
-         
-       
-        ///////////// UPLOAD END        
-        /*  temporary disabled
-         * 
-        var postTaskFileURL = $form.jzURL('TaskController.taskFile');
-        var xhr = $.post(postTaskFileURL, { taskId: taskId, fileName: fileName, fileType:fileType, fileSize:fileSize}, function(data) {
-            $taskFileContainer.jzLoad('TaskController.renderTaskFiles()', {id: taskId, loadAllTaskFile: loadAllTaskFile}, function() {
-                enhanceTaskFilesLinks();
-                initTaskFileEditor();
             });
-        },'json');
-        xhr.fail(function() {
-          taApp.showWarningDialog(xhr.responseText);
-        });
-*/
+            ///////////// UPLOAD END
+        }
+        
+
+         
         return false;
     });
     
@@ -395,30 +387,32 @@ $(document).ready(function() {
     
     
     $rightPanel.on('click', '[data-taskFileid] a.controllDelete', function(e) {
-        var $a = $(e.target).closest('a');
-        var $allTaskFiles = $a.closest('[data-alltaskFile]');
-        var $taskFile = $a.closest('[data-taskFileid]');
-        var $taskFileContainer = $a.closest('#tab-taskFiles');
-        var $task = $a.closest('[data-taskid]');
+    	if(confirm('Dosya silinecek, emin misiniz ?')){
+    		var $a = $(e.target).closest('a');
+            var $allTaskFiles = $a.closest('[data-alltaskFile]');
+            var $taskFile = $a.closest('[data-taskFileid]');
+            var $taskFileContainer = $a.closest('#tab-taskFiles');
+            var $task = $a.closest('[data-taskid]');
 
-        var taskId = $task.data('taskid');
-        var taskFileId = $taskFile.data('taskfileid');
-        var loadAllTaskFile = $allTaskFiles.data('alltaskFile');
-        var deleteURL = $a.jzURL('TaskController.deleteTaskFile');
-        $.ajax({
-            url: deleteURL,
-            data: {fileId: taskFileId},
-            type: 'POST',
-            success: function(data) {
-                $taskFileContainer.jzLoad('TaskController.renderTaskFiles()', {id: taskId, loadAllTaskFile: loadAllTaskFile}, function() {
-                  enhanceTaskFilesLinks();
-                  initTaskFileEditor();
-                });
-            },
-            error: function(xhr, textStatus, errorThrown) {
-                alert(xhr.responseText);
-            }
-        });
+            var taskId = $task.data('taskid');
+            var taskFileId = $taskFile.data('taskfileid');
+            var loadAllTaskFile = $allTaskFiles.data('alltaskFile');
+            var deleteURL = $a.jzURL('TaskController.deleteTaskFile');
+            $.ajax({
+                url: deleteURL,
+                data: {fileId: taskFileId},
+                type: 'POST',
+                success: function(data) {
+                    $taskFileContainer.jzLoad('TaskController.renderTaskFiles()', {id: taskId, loadAllTaskFile: loadAllTaskFile}, function() {
+                      enhanceTaskFilesLinks();
+                      initTaskFileEditor();
+                    });
+                },
+                error: function(xhr, textStatus, errorThrown) {
+                    alert(xhr.responseText);
+                }
+            });
+    	}        
     });
     
     
